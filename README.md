@@ -29,7 +29,7 @@ All SQL, the user who tweeted it, the time of the tweet, and what the primary ke
 Errors are logged in the "errors" table of the same database.  The SQL, user, timestamp and stack trace are stored.
 
 ##Commentary and Application Dependencies
-The idea for this came when I spent 2 hours looking for a table a webservice in a legacy application used.  When I finally found it, it was called "v_BPDGR". I commented to my PM that "The only excuse for that is you plan on tweeting your SQL to your database."
+The idea for this came when I spent 2 hours looking for a table a webservice in a legacy application used.  When I finally found it, its name was just 5 random capital letters. I commented to my PM that "The only excuse for that is you plan on tweeting your SQL to your database."
 
 It actually got written because I may also have been drunk later that night.
 
