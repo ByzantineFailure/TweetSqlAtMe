@@ -7,6 +7,7 @@ Configuration xml is forthcoming once I stop the small test I'm running (@TweetS
 
 ##Twitter syntax
 "@ACCOUNTNAME UNIQUEID SQL"
+
 UNIQUEID is any string that the posting twitter account has not used in conjunction with the given SQL before.  This is to get around Twitter's requirement that all tweets be unique.
 
 If table A is (id int, content varchar(50)) and has 3 records, running "SELECT * FROM A;" will return:
