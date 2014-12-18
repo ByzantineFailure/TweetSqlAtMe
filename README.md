@@ -9,6 +9,18 @@ Configuration xml is forthcoming once I stop the small test I'm running (@TweetS
 "@ACCOUNTNAME UNIQUEID SQL"
 UNIQUEID is any string that the posting twitter account has not used in conjunction with the given SQL before.  This is to get around Twitter's requirement that all tweets be unique.
 
+SELECT reply BNF:
+  reply ::= UNIQUEID " " records | UNIQUEID " " error | UNIQUEID " " "Select Returned No Results"  
+  records ::= record records | record
+  record ::= fields";"
+  fields ::= field","fields | field
+  
+  error ::= sqlError | applicationError
+
+Other funciton reply BNF:
+  reply ::= UNIQUEID " " "Success!" | UNIQUEID " " error
+  error ::= sqlError | applicationError
+
 ##Rate Limits
 The minimum time limit between queries a user can post can be modified in the configuration XML.
 
