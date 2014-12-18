@@ -33,6 +33,6 @@ The idea for this came when I spent 2 hours looking for a table a webservice in 
 
 It actually got written because I may also have been drunk later that night.
 
-It is in Python because you can be inebriated to the point that you have difficulty forming words and still not screw up the syntax.  Also because I'd used the twitter library it uses [here](https://github.com/ByzantineFailure/PAX_Pinger).
+It is in Python because you can be inebriated to the point that you have difficulty speaking intelligibly and still not screw up the syntax.  Also because I'd used the twitter library it uses [here](https://github.com/ByzantineFailure/PAX_Pinger).
 
 It uses PostgreSQL because I already had an instance running locally and I'm familiar with administering it.  It uses psycopg2 because I'd used it before [here](https://github.com/ByzantineFailure/PretendYourXyzzyDbTools).
