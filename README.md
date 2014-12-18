@@ -9,20 +9,17 @@ Configuration xml is forthcoming once I stop the small test I'm running (@TweetS
 "@ACCOUNTNAME UNIQUEID SQL"
 UNIQUEID is any string that the posting twitter account has not used in conjunction with the given SQL before.  This is to get around Twitter's requirement that all tweets be unique.
 
-SELECT reply BNF:
-  reply ::= UNIQUEID " " records | UNIQUEID " " error | UNIQUEID " " "Select Returned No Results"  
-  records ::= record records | record
-  record ::= fields";"
-  fields ::= field","fields | field
-  
-  error ::= sqlError | applicationError
+If table A is (id int, content varchar(50)) and has 3 records, running "SELECT * FROM A;" will return:
+    @REQUEST UNIQUEID 1,content1;2,content2;3,content3;
 
-Other funciton reply BNF:
-  reply ::= UNIQUEID " " "Success!" | UNIQUEID " " error
-  error ::= sqlError | applicationError
+Successful non-SELECT requests will return "Success!"
+
+Failed requests will return either the DB error message or an application error message.
 
 ##Rate Limits
 The minimum time limit between queries a user can post can be modified in the configuration XML.
+
+If a user performs a request before their request rate limit is up, no response will be returned.
 
 ##Logging
 All SQL, the user who tweeted it, the time of the tweet, and what the primary keyword of the tweet was is stored in the "log" table of the logging database specified in the XML.
