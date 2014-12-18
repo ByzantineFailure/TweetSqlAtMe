@@ -12,7 +12,7 @@ UNIQUEID is any string that the posting twitter account has not used in conjunct
 
 If table A is (id int, content varchar(50)) and has 3 records, running "SELECT * FROM A;" will return:
 
-    @REQUEST UNIQUEID 1,content1;2,content2;3,content3;
+    @REQUESTER UNIQUEID 1,content1;2,content2;3,content3;
 
 Successful non-SELECT requests will return "Success!"
 
