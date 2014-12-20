@@ -44,4 +44,4 @@ Multithread the SQL Execution
 
 Multithread the Twitter responses and have them use more than one account (account for the 1000/day rate limit).
 
-
+Find somewhere stupid enough to host this thing and alter it for deployment there.
