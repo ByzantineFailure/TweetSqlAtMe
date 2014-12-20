@@ -1,0 +1,21 @@
+<data>
+	<AppSettings>
+		<RateLimit>15</RateLimit>
+	</AppSettings>
+
+	<TwitterAuthDetails>
+		<API_Key></API_Key>
+		<API_Secret></API_Secret>
+		<AppName>TweetSqlAtMe</AppName>
+		
+		<OAuthToken></OAuthToken> 
+		<OAuthSecret></OAuthSecret>
+	</TwitterAuthDetails>
+
+	<DatabaseCredentials>
+		<PlaygroundConnectionString></PlaygroundConnectionString>
+		<LogConnectionString></LogConnectionString>
+	</DatabaseCredentials>
+
+
+</data>

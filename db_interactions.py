@@ -21,7 +21,8 @@ CREATE TABLE log (
 	del boolean NOT NULL default '0',
 	ins boolean NOT NULL default '0',
 	drp boolean NOT NULL default '0',
-	crt boolean NOT NULL default '0'
+	crt boolean NOT NULL default '0',
+	exc boolean NOT NULL default '0',
 );
 Maybe create an index on username for some time limiting
 
@@ -41,7 +42,7 @@ class DatabaseInteractions:
 		self.dbConnStr = config['db']['PlaygroundConnectionString'];
 		self.logConnStr = config['db']['LogConnectionString'];
 		self.rateLimit = int(config['settings']['RateLimit']);
-	
+	''' Moved to threaded, in-memory rate limiter
 	def checkRateLimit(self, user):
 		try:
 			now = datetime.datetime.now();
@@ -72,7 +73,7 @@ class DatabaseInteractions:
 		except:
 			self.logError(traceback.format_exc(), user, "RATE CHECK", logConn);
 			return False;
-
+'''
 	def runCommand(self, text, user):
 		try:
 			commandConn = psycopg2.connect(self.dbConnStr);

@@ -1,5 +1,6 @@
 from twitter_handler import *
 from db_interactions import *
+from rate_limiter import *
 import time
 import traceback
 
@@ -9,6 +10,7 @@ USERNAME = "@TweetSQLAtMeTes";
 
 twitter_handler = make_twitter_handler(CONFIG_LOCATION, OAUTH_LOCATION);
 db_handler = make_database_interactions(CONFIG_LOCATION);
+rate_limiter = make_rate_limiter(CONFIG_LOCATION);
 
 def get_sql_from_message(text):
         return ' '.join(text.strip().split(' ')[2:]);
@@ -26,9 +28,10 @@ def handle_message(msg):
                 command = get_sql_from_message(command);
                 print(command);
                 userLength = len(user);
-                if not db_handler.checkRateLimit(user):
+                if rate_limiter.checkRateLimit(user):
                         print("Rate Limit");
                 else:
+                        rate_limiter.limitUser(user);
                         response = db_handler.runCommand(command, user);
                         response = "@" + user + " " + (str(datetime.datetime.now())[-5:]) + " " + response;
                         print(response);
@@ -58,7 +61,7 @@ while(True):
                 testdata['text'] = command;
                 testdata['user'] = dict();
                 testdata['user']['screen_name'] = "TESTUSER";
-                testdata['id
+                testdata['id'] = "?";
                 handle_message(testdata);
 '''
 
