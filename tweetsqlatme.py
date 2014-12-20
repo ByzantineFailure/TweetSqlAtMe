@@ -1,6 +1,7 @@
 from twitter_handler import *
 from db_interactions import *
 from rate_limiter import *
+from configuration_reader import *
 import time
 import traceback
 
@@ -8,9 +9,12 @@ CONFIG_LOCATION = "configuration.xml";
 OAUTH_LOCATION = "oauth.dat";
 USERNAME = "@TweetSQLAtMeTes";
 
-twitter_handler = make_twitter_handler(CONFIG_LOCATION, OAUTH_LOCATION);
-db_handler = make_database_interactions(CONFIG_LOCATION);
-rate_limiter = make_rate_limiter(CONFIG_LOCATION);
+configuration = getConfiguration(CONFIG_LOCATION);
+twitter_handler = make_twitter_handler(configuration, OAUTH_LOCATION);
+command_pool = get_command_pool(configuration);
+log_pool = get_log_pool(configuration);
+db_handler = make_database_interactions(log_pool, command_pool);
+rate_limiter = make_rate_limiter(configuration);
 
 def get_sql_from_message(text):
         return ' '.join(text.strip().split(' ')[2:]);

@@ -7,8 +7,7 @@ from configuration_reader import *
 #This crazy-lazy implementation should work
 
 class RateLimiter:
-        def __init__(self, config_location):
-                config = getConfiguration(config_location);
+        def __init__(self, config):
                 self.rateLimit = int(config['settings']['RateLimit']);
                 self.limitedUsers = [];
         
@@ -33,8 +32,8 @@ class RateLimiterThread(threading.Thread):
                 except ValueError:
                         print("Tried to remove " + self.item + " but it didn't exist!");
 
-def make_rate_limiter(config_location):
-        return RateLimiter(config_location);
+def make_rate_limiter(config):
+        return RateLimiter(config);
 
 
 

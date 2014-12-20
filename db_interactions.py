@@ -2,7 +2,7 @@ import traceback
 import datetime
 import psycopg2
 import psycopg2.extras
-from configuration_reader import *
+from psycopg2.pool import SimpleConnectionPool
 
 '''
 Playground limitations:
@@ -37,56 +37,23 @@ CREATE TABLE Errors (
 '''
 
 class DatabaseInteractions:
-	def __init__(self, config_location):
-		config = getConfiguration(config_location);
-		self.dbConnStr = config['db']['PlaygroundConnectionString'];
-		self.logConnStr = config['db']['LogConnectionString'];
-		self.rateLimit = int(config['settings']['RateLimit']);
-	''' Moved to threaded, in-memory rate limiter
-	def checkRateLimit(self, user):
-		try:
-			now = datetime.datetime.now();
-			logConn = psycopg2.connect(self.logConnStr);
-			logConn.autocommit = True;
-		except:
-			return False;
-		try:
-			cur = logConn.cursor();
-			checkCommand = "SELECT time FROM Log WHERE username = %s ORDER BY time DESC LIMIT 1";
-			result = True;
-			
-			cur.execute(checkCommand, (user,));
+	def __init__(self, logPool, commandPool):
+		self.logPool = logPool;
+		self.commandPool = commandPool;
 
-			if cur.rowcount < 1:
-				result = True;
-			else:
-				log = cur.fetchone();
-				checktime = log[0] + datetime.timedelta(milliseconds=self.rateLimit);
-				
-				if checktime > now:
-					result = False;
-				else:
-					result = True;
-
-			logConn.close();
-			return result;
-		except:
-			self.logError(traceback.format_exc(), user, "RATE CHECK", logConn);
-			return False;
-'''
 	def runCommand(self, text, user):
 		try:
-			commandConn = psycopg2.connect(self.dbConnStr);
+			commandConn = self.commandPool.getconn();
 			commandConn.autocommit = True;
 		except:
 			print(traceback.format_exc());
 			return "Unable to connect to database!";
 
 		try:
-			logConn = psycopg2.connect(self.logConnStr);
+			logConn = self.logPool.getconn();
 			logConn.autocommit = True;
 		except:
-			commandConn.close();
+			commandPool.putconn(commandConn);
 			return "Unable to connect to logging db.  Sorry, no SQL!  (I suck, I know)";
 		
 		keyword = self.__getSqlKeyword(text);
@@ -96,8 +63,8 @@ class DatabaseInteractions:
 		else:
 			result = self.__runOther(text, user, keyword, commandConn, logConn);
 		
-		commandConn.close();
-		logConn.close();
+		self.commandPool.putconn(commandConn);
+		self.logPool.putconn(logConn);
 		return result;
 	
 	def __getSqlKeyword(self, commandText):
@@ -183,5 +150,17 @@ class DatabaseInteractions:
 			return;
 		cur.close();
 
-def make_database_interactions(config_location):
-	return DatabaseInteractions(config_location);
+def make_database_interactions(log_pool, command_pool):
+	return DatabaseInteractions(log_pool, command_pool);
+
+def get_log_pool(config):
+	minConn = int(config['settings']['MinPoolConnections']);
+	maxConn = int(config['settings']['MaxPoolConnections']);
+	connStr = config['db']['LogConnectionString'];
+	return psycopg2.pool.SimpleConnectionPool(minConn, maxConn, connStr);
+
+def get_command_pool(config):
+	minConn = int(config['settings']['MinPoolConnections']);
+	maxConn = int(config['settings']['MaxPoolConnections']);
+	connStr = config['db']['PlaygroundConnectionString'];
+	return psycopg2.pool.SimpleConnectionPool(minConn, maxConn, connStr);
