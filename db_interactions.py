@@ -23,6 +23,7 @@ CREATE TABLE log (
 	drp boolean NOT NULL default '0',
 	crt boolean NOT NULL default '0',
 	exc boolean NOT NULL default '0',
+	alt boolean NOT NULL default '0'
 );
 Maybe create an index on username for some time limiting
 
@@ -41,7 +42,7 @@ class DatabaseInteractions:
 		self.logPool = logPool;
 		self.commandPool = commandPool;
 
-	def runCommand(self, text, user):
+	def runCommand(self, commandText, user):
 		try:
 			commandConn = self.commandPool.getconn();
 			commandConn.autocommit = True;
@@ -56,13 +57,33 @@ class DatabaseInteractions:
 			commandPool.putconn(commandConn);
 			return "Unable to connect to logging db.  Sorry, no SQL!  (I suck, I know)";
 		
-		keyword = self.__getSqlKeyword(text);
+		print("Got Connections...");
+		keyword = self.__getSqlKeyword(commandText);
 		result = "";
-		if keyword.lower() == "select":
-			result = self.__runSelect(text, user, commandConn, logConn);
-		else:
-			result = self.__runOther(text, user, keyword, commandConn, logConn);
+		cur = commandConn.cursor();
+		print("Got Cursor...");
+
+		try:
+			print("Executing command...");
+			cur.execute(commandText);
+			self.__logCommand(commandText, user, keyword, logConn);
+			
+			if cur.description is not None:
+				print("Entering result set print");
+				result = self.__formatRows(cur);
+			else:
+				print("Entering no results print");
+				result = self.__formatNonRows(cur);
+
+		except psycopg2.Error as e:
+			print("Entering SQL error except...");
+			result = e.pgerror;
+		except:
+			print("Entering error except...");
+			self.logError(traceback.format_exc(), user, text, logConn);
+			result = "Some non-SQL error occured.  It was logged.  Sorry!";
 		
+		cur.close();
 		self.commandPool.putconn(commandConn);
 		self.logPool.putconn(logConn);
 		return result;
@@ -71,20 +92,9 @@ class DatabaseInteractions:
 		split = commandText.split(' ');
 		return split[0];
 
-	def __runSelect(self, commandText, user, conn, logConn):
-		cur = conn.cursor();
-		try:
-			cur.execute(commandText);
-			self.__logCommand(commandText, user, "select", logConn);
-		except psycopg2.Error as e:
-			self.__logCommand(commandText, user, "select", logConn);
-			return e.pgerror;
-		except:
-			self.logError(traceback.format_exc(), user, commandText, logConn);
-			return "Some non-SQL error occured.  It was logged.  Sorry!";
-		
+	def __formatRows(self, cur):
 		if cur.rowcount == 0:
-			results = "Select returned no results";
+			results = "No results returned";
 		else:
 			results = "";
 			for record in cur:
@@ -92,7 +102,6 @@ class DatabaseInteractions:
 				if len(results) >= 140:
 					break;
 		
-		cur.close();
 		return results;
 	
 	def __formatResult(self, row):
@@ -106,25 +115,11 @@ class DatabaseInteractions:
 		result = result + ";";
 		return result;
 
-	def __runOther(self, commandText, user, keyword, conn, logConn):
-		cur = conn.cursor();
-		try:
-			cur.execute(commandText);
-			self.__logCommand(commandText, user, keyword, logConn);
-		except psycopg2.Error as e:
-			self.__logCommand(commandText, user, keyword, logConn);
-			return e.pgerror;
-		except:
-			cur.close();
-			self.__logCommand(commandText, user, keyword, logConn);
-			self.logError(traceback.format_exc(), user, commandText, logConn);
-			return "Some non-SQL error occurred.  It was logged.  Sorry!";
-		
-		cur.close();
-		return "Success!";
+	def __formatNonRows(self, cur):
+		return cur.statusmessage;
 
 	def __logCommand(self, commandText, user, keyword, logConn):
-		insertText = "INSERT INTO Log (username, commandtext, time, sel, upd, del, ins, drp, crt, exc) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);";
+		insertText = "INSERT INTO Log (username, commandtext, time, sel, upd, del, ins, drp, crt, exc, alt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);";
 		isSel = True if keyword.lower() == "select" else False;
 		isUpd = True if keyword.lower() == "update" else False;
 		isDel = True if keyword.lower() == "delete" else False;
@@ -132,21 +127,26 @@ class DatabaseInteractions:
 		isDrp = True if keyword.lower() == "drop" else False;
 		isCrt = True if keyword.lower() == "create" else False;
 		isExc = True if keyword.lower() == "execute" else False;
+		isAlt = True if keyword.lower() == "alter" else False;
 		cur = logConn.cursor();
 		
 		try:
-			cur.execute(insertText, (user, commandText, datetime.datetime.now(), isSel, isUpd, isDel, isIns, isDrp, isCrt, isExc));
+			cur.execute(insertText, (user, commandText, datetime.datetime.now(), isSel, isUpd, isDel, isIns, isDrp, isCrt, isExc, isAlt));
 		except:
 			self.logError(traceback.format_exc(), user, commandText, logConn);
 			return;
 		cur.close();
 	
 	def logError(self, errorText, user, commandText, logConn):
+		print("Logging error...");
 		insertText = "INSERT INTO Errors (username, commandtext, exception, time) VALUES (%s, %s, %s, %s);"	
 		cur = logConn.cursor();
 		try:
+			print("Executing error log...");
 			cur.execute(insertText, (user, commandText, errorText, datetime.datetime.now()));
+			print("Logged error...");
 		except:
+			print(traceback.format_exc());
 			return;
 		cur.close();
 

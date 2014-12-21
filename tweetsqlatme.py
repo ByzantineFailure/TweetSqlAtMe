@@ -20,7 +20,7 @@ def get_sql_from_message(text):
         return ' '.join(text.strip().split(' ')[2:]);
 
 
-def handle_message(msg):
+def handle_message(msg, doTweet):
        if 'hangup' in msg:
                 raise Exception("Stream Failed!");
        if 'text' in msg:
@@ -39,11 +39,25 @@ def handle_message(msg):
                         response = db_handler.runCommand(command, user);
                         response = "@" + user + " " + (str(datetime.datetime.now())[-5:]) + " " + response;
                         print(response);
-                        twitter_handler.sendReply(response[:140], user, tweetid);
+                        if doTweet:
+                                twitter_handler.sendReply(response[:140], user, tweetid);
 
 def control_loop():
      for msg in twitter_handler.getStreamIterator():
-        handle_message(msg);
+        handle_message(msg, True);
+
+def control_loop_test():
+        while(True):
+                command = input("Feed me, Seymour: ");
+                if command == "exit":
+                        break;
+                else:
+                        testdata = dict();
+                        testdata['text'] = command;
+                        testdata['user'] = dict();
+                        testdata['user']['screen_name'] = "TESTUSER";
+                        testdata['id'] = "?";
+                        handle_message(testdata, False);
 
 while(True):
         try:
@@ -51,21 +65,9 @@ while(True):
         except:
                 print(traceback.format_exc());
                 time.sleep(90);
-                twitter_handler = make_twitter_handler(CONFIG_LOCATION, OAUTH_LOCATION);
+                twitter_handler = make_twitter_handler(configuration, OAUTH_LOCATION);
                 print("Handler restarted");
 
-#Testing stuff
-'''
-while(True):
-        command = input("Feed me, Seymour: ");
-        if command == "exit":
-                break;
-        else:
-                testdata = dict();
-                testdata['text'] = command;
-                testdata['user'] = dict();
-                testdata['user']['screen_name'] = "TESTUSER";
-                testdata['id'] = "?";
-                handle_message(testdata);
-'''
+
+
 
