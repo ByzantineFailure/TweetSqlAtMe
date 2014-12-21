@@ -3,8 +3,6 @@ TweetSqlAtMe
 
 A Python 3.x Application to run SQL over Twitter.
 
-Configuration xml is forthcoming once I stop the small test I'm running (@TweetSQLAtMeTes) and feel comfortable sanitizing it.
-
 ##Twitter syntax
 "@ACCOUNTNAME UNIQUEID SQL"
 
