@@ -12,7 +12,7 @@ If table A is (id int, content varchar(50)) and has 3 records, running "SELECT *
 
     @REQUESTER UNIQUEID 1,content1;2,content2;3,content3;
 
-Successful non-SELECT requests will return "Success!"
+Successful requests that do not have a result set will return the postgres results message.
 
 Failed requests will return either the DB error message or an application error message.
 
