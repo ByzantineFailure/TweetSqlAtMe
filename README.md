@@ -36,8 +36,6 @@ It is in Python because you can be inebriated to the point that you have difficu
 It uses PostgreSQL because I already had an instance running locally and I'm familiar with administering it.  It uses [psycopg2](https://pypi.python.org/pypi/psycopg2) because I'd used it before [here](https://github.com/ByzantineFailure/PretendYourXyzzyDbTools).
 
 ##To Do List
-Multithread the SQL Execution
-
-Multithread the Twitter responses and have them use more than one account (account for the 1000/day rate limit).
+Have twitter responses use more than one account (account for the 1000/day rate limit. Round-robin queue?).
 
 Find somewhere stupid enough to host this thing and alter it for deployment there.
