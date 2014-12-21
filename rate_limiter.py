@@ -1,5 +1,6 @@
 import threading
 import time
+import sys
 from configuration_reader import *
 
 #Python lists are thread-safe.  Their contents are not.
@@ -30,7 +31,7 @@ class RateLimiterThread(threading.Thread):
                 try:
                         self.items.remove(self.item);
                 except ValueError:
-                        print("Tried to remove " + self.item + " but it didn't exist!");
+                        sys.stdout.write("Tried to remove " + self.item + " but it didn't exist!\n");
 
 def make_rate_limiter(config):
         return RateLimiter(config);

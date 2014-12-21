@@ -4,6 +4,8 @@ from rate_limiter import *
 from configuration_reader import *
 import time
 import traceback
+import threading
+import sys
 
 CONFIG_LOCATION = "configuration.xml";
 OAUTH_LOCATION = "oauth.dat";
@@ -19,28 +21,42 @@ rate_limiter = make_rate_limiter(configuration);
 def get_sql_from_message(text):
         return ' '.join(text.strip().split(' ')[2:]);
 
+class MessageHandlerThread(threading.Thread):
+        def __init__(self, msg, doTweet, command_pool, log_pool):
+                threading.Thread.__init__(self);
+                self.msg = msg;
+                self.doTweet = doTweet;
+                self.db_handler = make_database_interactions(log_pool, command_pool);
+        
+        def run(self):
+               if 'hangup' in self.msg:
+                        raise Exception("Stream Failed!");
+               if 'text' in self.msg:
+                        user = get_twitter_message_user(self.msg);
+                        tweetid = self.msg['id'];
+                        if user.lower() == USERNAME[1:].lower():
+                                sys.stdout.flush();
+                                return;
+                        command = get_twitter_message_message(self.msg);
+                        command = get_sql_from_message(command);
+                        sys.stdout.write(command + '\n');
+                        userLength = len(user);
+                        if rate_limiter.checkRateLimit(user):
+                                sys.stdout.write("Rate Limit\n");
+                                sys.stdout.flush();
+                        else:
+                                rate_limiter.limitUser(user);
+                                response = self.db_handler.runCommand(command, user);
+                                response = "@" + user + " " + (str(datetime.datetime.now())[-5:]) + " " + response;
+                                sys.stdout.write(response + '\n');
+                                if self.doTweet:
+                                        twitter_handler.sendReply(response[:140], user, tweetid);
+                                sys.stdout.flush();
+
 
 def handle_message(msg, doTweet):
-       if 'hangup' in msg:
-                raise Exception("Stream Failed!");
-       if 'text' in msg:
-                user = get_twitter_message_user(msg);
-                tweetid = msg['id'];
-                if user.lower() == USERNAME[1:].lower():
-                        return;
-                command = get_twitter_message_message(msg);
-                command = get_sql_from_message(command);
-                print(command);
-                userLength = len(user);
-                if rate_limiter.checkRateLimit(user):
-                        print("Rate Limit");
-                else:
-                        rate_limiter.limitUser(user);
-                        response = db_handler.runCommand(command, user);
-                        response = "@" + user + " " + (str(datetime.datetime.now())[-5:]) + " " + response;
-                        print(response);
-                        if doTweet:
-                                twitter_handler.sendReply(response[:140], user, tweetid);
+        thread = MessageHandlerThread(msg, doTweet, command_pool, log_pool);
+        thread.start();
 
 def control_loop():
      for msg in twitter_handler.getStreamIterator():
@@ -58,15 +74,17 @@ def control_loop_test():
                         testdata['user']['screen_name'] = "TESTUSER";
                         testdata['id'] = "?";
                         handle_message(testdata, False);
+        sys.stdout.flush();
 
 while(True):
         try:
-                control_loop();
+                control_loop_test();
         except:
-                print(traceback.format_exc());
+                sys.stdout.write(traceback.format_exc() + '\n');
                 time.sleep(90);
                 twitter_handler = make_twitter_handler(configuration, OAUTH_LOCATION);
-                print("Handler restarted");
+                sys.stdout.write("Handler restarted\n");
+                sys.stdout.flush();
 
 
 

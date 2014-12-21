@@ -1,8 +1,9 @@
 import traceback
 import datetime
+import sys
 import psycopg2
 import psycopg2.extras
-from psycopg2.pool import SimpleConnectionPool
+from psycopg2.pool import ThreadedConnectionPool
 
 '''
 Playground limitations:
@@ -57,29 +58,22 @@ class DatabaseInteractions:
 			commandPool.putconn(commandConn);
 			return "Unable to connect to logging db.  Sorry, no SQL!  (I suck, I know)";
 		
-		print("Got Connections...");
 		keyword = self.__getSqlKeyword(commandText);
 		result = "";
 		cur = commandConn.cursor();
-		print("Got Cursor...");
 
 		try:
-			print("Executing command...");
 			cur.execute(commandText);
 			self.__logCommand(commandText, user, keyword, logConn);
 			
 			if cur.description is not None:
-				print("Entering result set print");
 				result = self.__formatRows(cur);
 			else:
-				print("Entering no results print");
 				result = self.__formatNonRows(cur);
 
 		except psycopg2.Error as e:
-			print("Entering SQL error except...");
 			result = e.pgerror;
 		except:
-			print("Entering error except...");
 			self.logError(traceback.format_exc(), user, text, logConn);
 			result = "Some non-SQL error occured.  It was logged.  Sorry!";
 		
@@ -138,15 +132,12 @@ class DatabaseInteractions:
 		cur.close();
 	
 	def logError(self, errorText, user, commandText, logConn):
-		print("Logging error...");
 		insertText = "INSERT INTO Errors (username, commandtext, exception, time) VALUES (%s, %s, %s, %s);"	
 		cur = logConn.cursor();
 		try:
-			print("Executing error log...");
 			cur.execute(insertText, (user, commandText, errorText, datetime.datetime.now()));
-			print("Logged error...");
 		except:
-			print(traceback.format_exc());
+			sys.stdout.write(traceback.format_exc() + '\n');
 			return;
 		cur.close();
 
@@ -157,10 +148,10 @@ def get_log_pool(config):
 	minConn = int(config['settings']['MinPoolConnections']);
 	maxConn = int(config['settings']['MaxPoolConnections']);
 	connStr = config['db']['LogConnectionString'];
-	return psycopg2.pool.SimpleConnectionPool(minConn, maxConn, connStr);
+	return psycopg2.pool.ThreadedConnectionPool(minConn, maxConn, connStr);
 
 def get_command_pool(config):
 	minConn = int(config['settings']['MinPoolConnections']);
 	maxConn = int(config['settings']['MaxPoolConnections']);
 	connStr = config['db']['PlaygroundConnectionString'];
-	return psycopg2.pool.SimpleConnectionPool(minConn, maxConn, connStr);
+	return psycopg2.pool.ThreadedConnectionPool(minConn, maxConn, connStr);
