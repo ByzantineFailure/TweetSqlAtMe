@@ -78,7 +78,7 @@ def control_loop_test():
 
 while(True):
         try:
-                control_loop_test();
+                control_loop();
         except:
                 sys.stdout.write(traceback.format_exc() + '\n');
                 time.sleep(90);
