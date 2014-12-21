@@ -3,8 +3,6 @@ TweetSqlAtMe
 
 A Python 3.x Application to run SQL over Twitter.
 
-Configuration xml is forthcoming once I stop the small test I'm running (@TweetSQLAtMeTes) and feel comfortable sanitizing it.
-
 ##Twitter syntax
 "@ACCOUNTNAME UNIQUEID SQL"
 
@@ -36,3 +34,12 @@ It actually got written because I may also have been drunk later that night.
 It is in Python because you can be inebriated to the point that you have difficulty speaking intelligibly and still not screw up the syntax.  Also because I'd used the [twitter library](https://pypi.python.org/pypi/twitter) it uses [here](https://github.com/ByzantineFailure/PAX_Pinger).
 
 It uses PostgreSQL because I already had an instance running locally and I'm familiar with administering it.  It uses [psycopg2](https://pypi.python.org/pypi/psycopg2) because I'd used it before [here](https://github.com/ByzantineFailure/PretendYourXyzzyDbTools).
+
+##To Do List
+Fix results formatting.  When you're inebriated, you forget that things like EXECUTE can return results too, not just SELECT.  Do this by checking if the cursor has any results when formatting the output.
+
+Multithread the SQL Execution
+
+Multithread the Twitter responses and have them use more than one account (account for the 1000/day rate limit).
+
+Find somewhere stupid enough to host this thing and alter it for deployment there.
