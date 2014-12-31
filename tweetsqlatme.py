@@ -12,7 +12,7 @@ OAUTH_LOCATION = "oauth.dat";
 USERNAME = "@TweetSQLAtMeTes";
 
 configuration = getConfiguration(CONFIG_LOCATION);
-twitter_handler = make_twitter_handler(configuration, OAUTH_LOCATION);
+twitter_handler = make_twitter_handler(configuration, OAUTH_LOCATION, CONFIG_LOCATION);
 command_pool = get_command_pool(configuration);
 log_pool = get_log_pool(configuration);
 db_handler = make_database_interactions(log_pool, command_pool);

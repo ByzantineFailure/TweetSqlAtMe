@@ -2,7 +2,7 @@ from twitter import *
 from configuration_reader import *
 
 class TwitterHandler(object):
-	def __init__(self, config, oauth_location):
+	def __init__(self, config, oauth_location, config_location):
 		auth = config['auth']
 
 		if(not auth['OAuthToken'] or not auth['OAuthSecret']):
@@ -29,6 +29,6 @@ def get_twitter_message_user(message):
 def get_twitter_message_message(message):
 	return message['text'];
 
-def make_twitter_handler(config, oauth_location):
-	return TwitterHandler(config, oauth_location);
+def make_twitter_handler(config, oauth_location, config_location):
+	return TwitterHandler(config, oauth_location, config_location);
 
