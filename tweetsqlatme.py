@@ -21,6 +21,8 @@ rate_limiter = make_rate_limiter(configuration);
 def get_sql_from_message(text):
         return ' '.join(text.strip().split(' ')[2:]);
 
+#Threading this is both completely necessary and not at all bug-prone
+#WEBSCALE WEBSCALE WEBSCALE WEBSCALE WEBSCALE WEBSCALE WEBSCALE WEBSCALE
 class MessageHandlerThread(threading.Thread):
         def __init__(self, msg, doTweet, command_pool, log_pool):
                 threading.Thread.__init__(self);
