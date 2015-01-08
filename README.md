@@ -38,4 +38,4 @@ It uses PostgreSQL because I already had an instance running locally and I'm fam
 ##To Do List
 Have twitter responses use more than one account (account for the 1000/day rate limit. Round-robin queue?).
 
-Find somewhere stupid enough to host this thing and alter it for deployment there.
+Un-multithread this because elcheapo VPSs are 1-core.
